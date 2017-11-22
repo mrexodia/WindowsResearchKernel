@@ -1974,12 +1974,14 @@ Return Value:
     }
 #endif
 
+    // Check if e_lfanew doesn't point beyond the file end
     if ((ULONG)DosHeader->e_lfanew > EndOfFile.LowPart) {
         Status = STATUS_INVALID_IMAGE_PROTECT;
         MI_BAD_IMAGE (5);
         goto BadPeImageSegment;
     }
 
+    // Check if e_lfanew doesn't overflow when adding sizeof(IMAGE_NT_HEADERS) and 16 sections
     if (((ULONG)DosHeader->e_lfanew +
             sizeof(IMAGE_NT_HEADERS) +
             (16 * sizeof(IMAGE_SECTION_HEADER))) <= (ULONG)DosHeader->e_lfanew) {
@@ -2406,6 +2408,7 @@ Return Value:
     }
 #endif
 
+    // IMPORTANT
     if (SizeOfHeaders >= SizeOfImage) {
         Status = STATUS_INVALID_IMAGE_FORMAT;
         MI_BAD_IMAGE (0x10);
@@ -2848,6 +2851,7 @@ Return Value:
             ULONG EndOfSection;
             ULONG ExtraPages;
 
+            // NOTE: if VirtualSize is null, SizeOfRawData is used
             if (TempSectionTableEntry->Misc.VirtualSize == 0) {
                 SectionVirtualSize = TempSectionTableEntry->SizeOfRawData;
             }
@@ -3181,6 +3185,7 @@ Return Value:
 
     ImageFileSize = EndOfFile.LowPart + 1;
 
+    // NOTE: section loop
     while (NumberOfSubsections > 0) {
 
         if ((InvalidAlignmentAllowed == FALSE) ||
@@ -3408,7 +3413,7 @@ Return Value:
 
         SectionTableEntry += 1;
         NumberOfSubsections -= 1;
-    }
+    } //NOTE: end of section loop
 
     ASSERT ((PointerPte > NewSegment->PrototypePte) &&
             (PointerPte <= NewSegment->PrototypePte + NewSegment->TotalNumberOfPtes));
